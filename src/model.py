@@ -17,7 +17,6 @@ class DecoderType:
     BeamSearch = 1
     WordBeamSearch = 2
 
-PRETRAINED_MODEL_WEIGHTS_PATH = os.environ.get("DATA_PATH")
 
 class Model:
     """Minimalistic TF model for HTR."""
@@ -26,13 +25,14 @@ class Model:
                  char_list: List[str],
                  decoder_type: str = DecoderType.BestPath,
                  must_restore: bool = False,
-                 dump: bool = False) -> None:
+                 dump: bool = False, data_path: str="") -> None:
         """Init model: add CNN, RNN and CTC and initialize TF."""
         self.dump = dump
         self.char_list = char_list
         self.decoder_type = decoder_type
         self.must_restore = must_restore
         self.snap_ID = 0
+        self.data_path = data_path
 
         # Whether to use normalization over a batch or a population
         self.is_train = tf.compat.v1.placeholder(tf.bool, name='is_train')
@@ -135,7 +135,7 @@ class Model:
         elif self.decoder_type == DecoderType.WordBeamSearch:
             # prepare information about language (dictionary, characters in dataset, characters forming words)
             chars = ''.join(self.char_list)
-            word_chars = open(f"{PRETRAINED_MODEL_WEIGHTS_PATH}/wordCharList.txt").read().splitlines()[0]
+            word_chars = open(f"{self.data_path}/wordCharList.txt").read().splitlines()[0]
             corpus = open('../data/corpus.txt').read()
 
             # decode using the "Words" mode of word beam search
@@ -154,7 +154,7 @@ class Model:
         sess = tf.compat.v1.Session()  # TF session
 
         saver = tf.compat.v1.train.Saver(max_to_keep=1)  # saver saves model to file
-        model_dir = PRETRAINED_MODEL_WEIGHTS_PATH
+        model_dir = self.data_path
         latest_snapshot = tf.train.latest_checkpoint(model_dir)  # is there a saved model?
 
         # if model must be restored (for inference), there must be a snapshot
@@ -304,4 +304,4 @@ class Model:
     def save(self) -> None:
         """Save model to file."""
         self.snap_ID += 1
-        self.saver.save(self.sess, f"{PRETRAINED_MODEL_WEIGHTS_PATH}/snapshot", global_step=self.snap_ID)
+        self.saver.save(self.sess, f"{self.data_path}/snapshot", global_step=self.snap_ID)
