@@ -136,7 +136,7 @@ class Model:
             # prepare information about language (dictionary, characters in dataset, characters forming words)
             chars = ''.join(self.char_list)
             word_chars = open(f"{self.data_path}/wordCharList.txt").read().splitlines()[0]
-            corpus = open('../data/corpus.txt').read()
+            corpus = open(f"{self.data_path}/corpus.txt").read()
 
             # decode using the "Words" mode of word beam search
             from word_beam_search import WordBeamSearch
